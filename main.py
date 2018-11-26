@@ -25,7 +25,7 @@ class Simulator:
         self.voltage_sources = []
         self.current_sources = []
         self.voltage_sources_types = {}
-        self.res = {} # For saving the final results.
+        self.res = {}  # For saving the final results.
 
         self.n = 0
         self.m = 0
@@ -64,15 +64,15 @@ class Simulator:
 
         # Get b and c.
         for vs in self.voltage_sources:
-            self.b[vs[3]] = 1
-            self.b[vs[4]] = -1
+            self.b[vs[3], vs[5]] = 1
+            self.b[vs[4], vs[5]] = -1
         self.c = np.transpose(self.b)
 
         # Get d.
         for vs in self.voltage_sources:
             if vs[0]:
                 continue
-            self.d[vs[5]] = - vs[1]
+            self.d[vs[5], vs[5]] = - vs[1]
 
         self.a[0:self.n, 0:self.n] = self.g
         self.a[0:self.n, self.n:self.n + self.m] = self.b
@@ -106,7 +106,7 @@ class Simulator:
                     self.z[vs[VOLTAGE_SOURCE_NUMBER] + self.n] -= vs[1] * dst
 
     def simulate(self):
-        for i in range(1, self.n + 1):
+        for i in range(1, self.n + self.m + 1):
             self.res[i] = []
 
         for i in range(self.iterations):
