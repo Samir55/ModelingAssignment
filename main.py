@@ -1,6 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from ComponentReader import ComponentReader
 
+INPUT_FILE = "TestCases/2/input.txt"
+STEP = 0.1
+ITERATIONS = 20
+
+# Constants
 DST = 3
 SRC = 4
 VOLTAGE_SOURCE_NUMBER = 5
@@ -19,6 +25,7 @@ class Simulator:
         self.voltage_sources = []
         self.current_sources = []
         self.voltage_sources_types = {}
+        self.res = {} # For saving the final results.
 
         self.n = 0
         self.m = 0
@@ -99,9 +106,8 @@ class Simulator:
                     self.z[vs[VOLTAGE_SOURCE_NUMBER] + self.n] -= vs[1] * dst
 
     def simulate(self):
-        res = {}
         for i in range(1, self.n + 1):
-            res[i] = []
+            self.res[i] = []
 
         for i in range(self.iterations):
             a = self.a[1:, 1:]
@@ -113,37 +119,77 @@ class Simulator:
             # Saving the output.
             j = 1
             for el in x:
-                res[j].append(el)
+                self.res[j].append(el)
                 j += 1
 
             # Update z.
             self.get_z(False)
 
+        # Print Results.
+        self.print()
+
+        # Plot Table and WaveForms
+        self.plot()
+
+    def print(self):
         # Print Volts for each node
         for i in range(1, self.n):
-            s = 0.1
+            s = self.step
             print('V' + str(i))
-            for el in res[i]:
+            for el in self.res[i]:
                 if round(s * 10) % 10 == 0:
                     print("%.0f" % s, "%.10f" % el[0])
                 else:
                     print("%.1f" % s, "%.10f" % el[0])
-                s += 0.1
+                s += self.step
             print('')
         # Print Currents for each voltage source.
         for i in range(self.n, self.n + self.m):
-            s = 0.1
+            s = self.step
             print('I' + self.voltage_sources_types[i - self.n])
-            for el in res[i]:
+            for el in self.res[i]:
                 if round(s * 10) % 10 == 0:
                     print("%.0f" % s, "%.10f" % el[0])
                 else:
                     print("%.1f" % s, "%.10f" % el[0])
-                s += 0.1
+                s += self.step
             print('')
 
-        # Plot
+    def plot(self):
+        # Prepare data for plotting.
+        table_headers = ['Time']
+        data = np.zeros((self.iterations, self.x.shape[0]))
+
+        for i in range(1, self.n):
+            table_headers.append('V' + str(i))
+            data[:, i] = ["%.10f" % el[0] for el in self.res[i]]
+        for i in range(self.n, self.x.shape[0]):
+            table_headers.append('I' + self.voltage_sources_types[i - self.n])
+            data[:, i] = ["%.10f" % el[0] for el in self.res[i]]
+
+        s = self.step
+        for i in range(self.iterations):
+            data[i, 0] = "%.1f" % s
+            s += self.step
+
+        # Plot Table.
+        plt.figure(self.n + self.m + 1)
+        ax = plt.subplot(111, frame_on=False)
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+        the_table = plt.table(cellText=data,
+                              colLabels=table_headers, loc="upper center")
+
+        # Wave Forms.
+        for i in range(data.shape[1] - 1):
+            plt.figure(i)
+            plt.plot(data[:, 0], data[:, i + 1])
+            if i + 1 < self.n:
+                plt.title('V' + str(i + 1))
+            else:
+                plt.title('I' + self.voltage_sources_types[i + 1 - self.n])
+        plt.show()
 
 
-simulator = Simulator("TestCases/2/input.txt", 20, 0.1)
+simulator = Simulator(INPUT_FILE, ITERATIONS, STEP)
 simulator.simulate()
