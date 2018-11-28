@@ -175,19 +175,14 @@ class Simulator:
         # Plot Table.
         plt.figure(self.n + self.m + 1)
         ax = plt.subplot(111, frame_on=False)
-        ax.xaxis.set_visible(False)
-        ax.yaxis.set_visible(False)
         the_table = plt.table(cellText=data,
                               colLabels=table_headers, loc="upper center")
 
         # Wave Forms.
+        plt.figure(0)
         for i in range(data.shape[1] - 1):
-            plt.figure(i)
             plt.plot(data[:, 0], data[:, i + 1])
-            if i + 1 < self.n:
-                plt.title('V' + str(i + 1))
-            else:
-                plt.title('I' + self.voltage_sources_types[i + 1 - self.n])
+            plt.legend(table_headers[1: self.n + 1])
         plt.show()
 
 
