@@ -179,10 +179,13 @@ class Simulator:
                               colLabels=table_headers, loc="upper center")
 
         # Wave Forms.
-        plt.figure(0)
         for i in range(data.shape[1] - 1):
+            plt.figure(i)
             plt.plot(data[:, 0], data[:, i + 1])
-            plt.legend(table_headers[1: self.n + 1])
+            if i + 1 < self.n:
+                plt.title('V' + str(i + 1))
+            else:
+                plt.title('I' + self.voltage_sources_types[i + 1 - self.n])
         plt.show()
 
 
